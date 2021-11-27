@@ -157,6 +157,7 @@ time.sleep(20)
 #siren will start after 20 seconds, ( for test purposes)
 patient_allocated = True
 patient_gps = { "lat":53 , "lon" : -6}
+#Now ambulance will start moving towards the target
 time.sleep(50)
 
 
