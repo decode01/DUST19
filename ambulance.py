@@ -154,7 +154,7 @@ def peek(output): #gets instance of output
     return(output)
 #lets test
 time.sleep(20)
-#ambulance will start after 5 seconds
+#siren will start after 20 seconds, ( for test purposes)
 patient_allocated = True
 patient_gps = { "lat":53 , "lon" : -6}
 time.sleep(50)
