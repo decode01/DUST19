@@ -70,38 +70,37 @@ class Dummy:
         self.dummy_s1["lon"] = round(self.dummy_s1["lon"],4)
         #self.ful_start -= 0.01
         return self.dummy_s1
-    #Temperature increases after Heart rate crosses 100
+  
     def fuel(self,patient_allocated):
         self.dummy_s2 -= 0.25
         return round(self.dummy_s2,2)
     
-    #Patient stops moving and shows fixed GPS after temperature crosses 37 degree C
     def ac(self,patient_allocated):
         return round(self.dummy_s3 + random.randint(-2,2),2)
-    #SPO2 is changed randomly
+   
     def vital(self,patient_allocated):
         num = int(self.id)
         if num % 2 == 0:
             self.dummy_s4["bp"] = False
         return self.dummy_s4
-    #Stress generally fixed at medium..changes to high after temperature crosses 37
+   
     def ecg(self,patient_allocated):
         num = int(self.id)
         if num % 2 == 0:
             self.dummy_s5["ecg"] = False
         return self.dummy_s5
-    #Motion will turn to no when temperature crosses 37 and heartbeat crosses 140
+   
     def microphone(self,patient_allocated):
         #keeping it yes for the moment
         return self.dummy_s6
-    #insultin content randomly varied
+
     def siren(self,patient_allocated):
         if patient_allocated is True and bool(patient_gps):
             self.dummy_s7 = True
             sound = threading.Thread(target = self.playsound,daemon=True)
             sound.start()
         return self.dummy_s7
-    #pressure increases linearly after heartbeat crosses 100
+  
     def radar(self,patient_allocated): #considering it to be a proximity sensor
         if patient_allocated is False:
             # fewer traffic
@@ -153,8 +152,9 @@ listener.start()
 def peek(output): #gets instance of output
     return(output)
 #lets test
-time.sleep(20)
+time.sleep(20) 
 #siren will start after 20 seconds, ( for test purposes)
+#daemon <true/false>?
 patient_allocated = True
 patient_gps = { "lat":53 , "lon" : -6}
 #Now ambulance will start moving towards the target
