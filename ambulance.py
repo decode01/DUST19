@@ -6,6 +6,7 @@ import threading
 import argparse
 from pydub import AudioSegment
 from pydub.playback import play
+from math import sin, cos, sqrt, atan2, radians
 
 
 
@@ -160,7 +161,29 @@ patient_gps = { "lat":53 , "lon" : -6}
 #Now ambulance will start moving towards the target
 time.sleep(50)
 
+def check_feasibility(ambulance_lat, ambulance_long):
+    dict = peek()
+    eta = calculate_distance(ambulance_lat, ambulance_long, dict["D1"]["patient_gps"]["lat"], dict["D1"]["patient_gps"]["long"])
+    if dict["D2"] > 50 and dict["D4"]["o2"] and dict["D4"]["bp"] and dict["D5"]["ecg"] and dict["D5"]["defib"]:
+        print(eta)
+        #connection true
+    else :
+        pass
+        #No connection return false
 
+
+def calculate_distance(ambulance_lat, ambulance_long, human_lat, human_long) :
+    dlon = ambulance_long - human_long
+    dlat = ambulance_lat - human_lat
+    distance = sqrt(dlon**2 + dlat**2)
+    #Assuming average speed of 60 km/hr
+    time = distance/60
+    print("ETA:", time)
+    return time
+
+while True:
+    time.sleep(10)
+    check_feasibility()
 
 #CURRENT THREAD..call peek withing a loop to periodically check
 #should be called in a while loop
