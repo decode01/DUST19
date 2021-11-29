@@ -150,12 +150,43 @@ listener = threading.Thread(target=init_and_start,kwargs={'dummy':dummy},daemon=
 #init_and_start(args.deviceID) #"Pass this to thread and this will output steady steam of values"
 listener.start()
 
-
 #CONTROL LOGIC STARTS from here
-def peek(output): #gets instance of output
+def peek(): #gets instance of output
+    global output
     return(output)
-time.sleep(50)
 
+def send_to_hub():
+    #communicate to hub
+    #LP - Low Pressure
+    #HA - Heart Attack
+    #HH - High Insulin
+    initiate_emergency_service = False
+    dict = peek()
+    code = ''
+    if dict["D1"] < 60 and dict["D6"] == "no":
+        initiate_emergency_service = True
+        print("Low Pressure and fainted")
+        code = 'LP'
+        #Low Pressure and fainted | dict["D3"] needs to be passed
+    if dict["D1"] > 150 and dict["D2"] > 37.5 and dict["D8"]["sys"]  > 150 :
+        initiate_emergency_service = True
+        print("Heart attack")
+        code = 'HA'
+        #Heart attack | dict["D3"] needs to be passed
+    if dict["D7"] > 0.25:
+        initiate_emergency_service = True
+        print('Insulin high')
+        code = 'HH'
+        #Sugar High | dict["D3"] needs to be passed
+    if initiate_emergency_service:
+        #communicate with hub
+        pass
+    
+while True:
+    time.sleep(10) #checks for patient condition every 10 seconds . can be changed later
+    #print("\n\nOutput after 10 seconds",peek()) #just checking
+    send_to_hub()
+    #break
 
 #CURRENT THREAD..call peek withing a loop to periodically check
 #should be called in a while loop
