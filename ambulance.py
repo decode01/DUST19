@@ -149,16 +149,18 @@ def connectandregistertochub():
     chub_socket.send(l_msg.encode())
     threading.Thread(target=activeListenHub,daemon=True).start()
 
-
-
 def activeListenHub():
     while True:
+        dict = peek()
+        global patient_allocated
+        global patient_gps
         data = chub_socket.recv(1024)
-        print('\r{}->  {}\n> '.format("Hub",data.decode()), end='')
-
-
-
-
+        local_message = data.decode()
+        print('\r{}->  {}\n> '.format("Hub", local_message, end=''))
+        if local_message.split(":")[2].split(",") :
+            patient_allocated = True
+            patient_gps = {"lat": float(local_message.split(":")[2].split(",")[0]), "lon": local_message.split(":")[2].split(",")[1]}
+            check_feasibility(dict["D1"]["lat"], dict["D1"]["lon"])
 
 connectandregistertochub()    
 dummy = instantiate(args.deviceID,patient_allocated)
@@ -201,7 +203,7 @@ def calculate_distance(ambulance_lat, ambulance_long, human_lat, human_long) :
 
 while True:
     time.sleep(10)
-    check_feasibility()
+    # check_feasibility()
 
 #CURRENT THREAD..call peek withing a loop to periodically check
 #should be called in a while loop
