@@ -7,14 +7,15 @@ import argparse
 from pydub import AudioSegment
 from pydub.playback import play
 from math import sin, cos, sqrt, atan2, radians
-
-
+import socket
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--deviceID')
 #parser.add_argument('--mode') "mode not required
 args = parser.parse_args()
+chub_port = 12345
+chub_socket = socket.socket()
 
 
 output = {}
@@ -98,8 +99,8 @@ class Dummy:
     def siren(self,patient_allocated):
         if patient_allocated is True and bool(patient_gps):
             self.dummy_s7 = True
-            sound = threading.Thread(target = self.playsound,daemon=True)
-            sound.start()
+            # sound = threading.Thread(target = self.playsound,daemon=True)
+            # sound.start()
         return self.dummy_s7
   
     def radar(self,patient_allocated): #considering it to be a proximity sensor
@@ -140,9 +141,26 @@ def init_and_start(dummy):
         time.sleep(1)
         print(output, end= "   \r")
     #sys.stdout.flush()
-    
 
-    
+def connectandregistertochub():
+    chub_socket.connect(('127.0.0.1', chub_port)) 
+    print (chub_socket.recv(1024).decode())
+    l_msg = "A:"+ args.deviceID
+    chub_socket.send(l_msg.encode())
+    threading.Thread(target=activeListenHub,daemon=True).start()
+
+
+
+def activeListenHub():
+    while True:
+        data = chub_socket.recv(1024)
+        print('\r{}->  {}\n> '.format("Hub",data.decode()), end='')
+
+
+
+
+
+connectandregistertochub()    
 dummy = instantiate(args.deviceID,patient_allocated)
 listener = threading.Thread(target=init_and_start,kwargs={'dummy':dummy},daemon=True)
 #init_and_start(args.deviceID) #"Pass this to thread and this will output steady steam of values"
