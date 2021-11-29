@@ -4,6 +4,7 @@ import time
 import sys
 import threading
 import argparse
+import socket
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--deviceID')
@@ -13,6 +14,10 @@ args = parser.parse_args()
 
 output = {}
 emergency = True
+chub_port = 12345
+chub_socket = socket.socket()
+chub_emchannel = False
+
 
 if args.deviceID is None:
     print("Please enter device ID")
@@ -48,7 +53,7 @@ class Dummy:
             else:
                 self.dummy_s1 += random.randint(-8,8)*0.005
         else:
-            self.dummy_s1 = random.randint(-3,10)
+            self.dummy_s1 += random.randint(-8,8)*0.005
         #self.ful_start -= 0.01
         return int(self.dummy_s1)
     #Temperature increases after Heart rate crosses 100
@@ -143,8 +148,13 @@ def init_and_start(dummy):
         print(output, end= "   \r")
     #sys.stdout.flush()
     
+def connectandregistertochub():
+    chub_socket.connect(('127.0.0.1', chub_port)) 
+    print (chub_socket.recv(1024).decode())
+    l_msg = "H:"+ args.deviceID
+    chub_socket.send(l_msg.encode())
 
-    
+connectandregistertochub()   
 dummy = instantiate(args.deviceID,emergency)
 listener = threading.Thread(target=init_and_start,kwargs={'dummy':dummy},daemon=True)
 #init_and_start(args.deviceID) #"Pass this to thread and this will output steady steam of values"
@@ -155,11 +165,24 @@ def peek(): #gets instance of output
     global output
     return(output)
 
+
+
+
+def emergencycomm(errcode = '',lat = 0, lon = 0):
+    l_msg = "EM00:"+str(lat)+','+str(lon)
+    chub_socket.send(l_msg.encode())
+
+
+
+
+
+
 def send_to_hub():
     #communicate to hub
     #LP - Low Pressure
     #HA - Heart Attack
     #HH - High Insulin
+    global chub_emchannel
     initiate_emergency_service = False
     dict = peek()
     code = ''
@@ -174,13 +197,16 @@ def send_to_hub():
         code = 'HA'
         #Heart attack | dict["D3"] needs to be passed
     if dict["D7"] > 0.25:
-        initiate_emergency_service = True
+        # initiate_emergency_service = True
         print('Insulin high')
         code = 'HH'
         #Sugar High | dict["D3"] needs to be passed
-    if initiate_emergency_service:
+    if initiate_emergency_service and chub_emchannel == False :
         #communicate with hub
-        pass
+        chub_emchannel = True
+        print("Inside emergency block")
+        emergencycomm(code,dict["D3"]["lat"],dict["D3"]["lon"])
+        
     
 while True:
     time.sleep(10) #checks for patient condition every 10 seconds . can be changed later
