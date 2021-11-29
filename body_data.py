@@ -17,6 +17,7 @@ emergency = True
 chub_port = 12345
 chub_socket = socket.socket()
 chub_emchannel = False
+em_port = 34567
 
 
 if args.deviceID is None:
@@ -144,8 +145,8 @@ def init_and_start(dummy):
     while True:
         #time.sleep(1)
         output = dummy.start()
-        time.sleep(1)
-        print(output, end= "   \r")
+        time.sleep(.1)
+        # print(output, end= "   \r")
     #sys.stdout.flush()
     
 def connectandregistertochub():
@@ -171,9 +172,27 @@ def peek(): #gets instance of output
 def emergencycomm(errcode = '',lat = 0, lon = 0):
     l_msg = "EM00:"+str(lat)+','+str(lon)
     chub_socket.send(l_msg.encode())
+    emergency_channel_activate()
+
+def activeListener(soc = None):
+    c, addr = soc.accept()
+    print ('Got connection from', addr )
+    while True:
+        data = c.recv(1024)
+        msg = data.decode()
+        print('Em Responce: {}\n> '.format(msg), end='')
 
 
-
+def emergency_channel_activate():
+    em_soc = socket.socket()
+    print ("Emergency communication channel successfully created")
+    em_soc.bind(('127.0.0.1', em_port))        
+    print ("Socket binded to %s" %(em_port)) 
+    em_soc.listen(5)    
+    print ("Socket is listening")
+    threading.Thread(target=activeListener, kwargs={'soc' : em_soc}, daemon=True).start()
+    while True:
+        pass
 
 
 
@@ -198,7 +217,7 @@ def send_to_hub():
         #Heart attack | dict["D3"] needs to be passed
     if dict["D7"] > 0.25:
         # initiate_emergency_service = True
-        print('Insulin high')
+        # print('Insulin high')
         code = 'HH'
         #Sugar High | dict["D3"] needs to be passed
     if initiate_emergency_service and chub_emchannel == False :
@@ -209,7 +228,7 @@ def send_to_hub():
         
     
 while True:
-    time.sleep(10) #checks for patient condition every 10 seconds . can be changed later
+    time.sleep(5) #checks for patient condition every 10 seconds . can be changed later
     #print("\n\nOutput after 10 seconds",peek()) #just checking
     send_to_hub()
     #break

@@ -35,11 +35,14 @@ class EmergencyServiceInNeed:
         self.patient_details = obj
         self.lat = lat
         self.lon = lon
-        self.time = datetime.now().time()
+        self.allocatedv = None
+        self.time = datetime.now()
         self.available = []
         self.getAvailableVehicle()
-        self.responces = 0
+        self.responses = 0
         self.inBroadcast()
+        self.eta = {}
+
 
 
         
@@ -54,6 +57,34 @@ class EmergencyServiceInNeed:
             if v.inuse == False:
                 self.available.append(v)
         print("Total available:: {}".format(len(self.available)) )
+    
+    def assignVehicle(self,a_obj):
+        self.allocatedv = a_obj
+        l_mg ="EM02:"+self.patient_details.name+":"+self.lon+","+self.lat
+        a_obj.connector.send(l_mg.encode())
+    
+    
+    def allocateVehicle(self):
+        allocate = False
+        print("Inside Allocate Vehicle")
+        while True:
+            vname = ''
+            etamin = 2000
+            if (datetime.now() - self.time).seconds > 2 and allocate == False:
+                
+                print("Inside compare")
+                for key in self.eta.keys():
+                    if self.eta[key] != -1:
+                        if self.eta[key] < etamin: #and getAmbulanceDetails(vname).inuse == False:
+                            etamin = self.eta[key]
+                            vname = key
+                if vname == '':
+                    print("No Emergency service can be initiated now, connecting to Hub 2")
+                else:
+                    getAmbulanceDetails(vname).inuse = True
+                    self.assignVehicle(getAmbulanceDetails(vname))
+                    break
+                
 
     
 
@@ -119,9 +150,10 @@ class Register:
                     print('\rEmrgency service initated for {} @ {}\n'.format(obj.name,msg_split[1]), end='')
                     em_obj = EmergencyServiceInNeed(obj,sensor_vals[0],sensor_vals[1])
                     emergency_dict[obj.name] = em_obj
-                    
+                    threading.Thread(target=em_obj.allocateVehicle, daemon= True).start()
                     print('Done')
 
+    
 
 
     
@@ -131,7 +163,19 @@ class Register:
         else:
             while True:
                 data = obj.connector.recv(1024)
-                print('\r{}: {}\n> '.format(obj.name,data.decode()), end='')
+                msg = data.decode()
+                print('\r{}: {}\n> '.format(obj.name,msg), end='')
+                msg_split = msg.split(':')
+                if msg_split[0] == 'ETA':
+                    em_obj = emergency_dict[msg_split[1]]
+                    em_obj.eta[obj.name] = float(msg_split[2])
+                    em_obj.responses +=1
+
+
+                    
+
+                    
+
 
 
 
