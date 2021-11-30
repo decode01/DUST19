@@ -45,10 +45,11 @@ def getObjectByDetails(name,type):
 
 
 class EmergencyServiceInNeed:
-    def __init__(self,obj,lat,lon,emport):
+    def __init__(self,obj,lat,lon,patient_ip,emport):
         self.patient_details = obj
         self.lat = lat
         self.lon = lon
+        self.patient_ip = patient_ip
         self.emport = emport
         self.allocatedv = None
         self.time = datetime.now()
@@ -62,7 +63,9 @@ class EmergencyServiceInNeed:
 
         
     def inBroadcast(self):
-        l_msg = "EM00:"+self.patient_details.name + ":" + self.lat + "," + self.lon + "," + self.emport
+        print("IP-hub",self.patient_ip)
+        print("IP emport",self.emport)
+        l_msg = "EM00:"+self.patient_details.name + ":" + self.lat + "," + self.lon + "," + self.patient_ip + "," + self.emport
         for v in self.available:
             print("Sending msg to {}".format(v.name))
             v.connector.send(l_msg.encode())
@@ -164,7 +167,7 @@ class Register:
                 if msg_split[0] == 'EM00':
                     sensor_vals = msg_split[1].split(',')
                     print('\rEmrgency service initated for {} @ {}\n'.format(obj.name,msg_split[1]), end='')
-                    em_obj = EmergencyServiceInNeed(obj,sensor_vals[0],sensor_vals[1],sensor_vals[2])
+                    em_obj = EmergencyServiceInNeed(obj,sensor_vals[0],sensor_vals[1],sensor_vals[2],sensor_vals[3])
                     emergency_dict[obj.name] = em_obj
                     threading.Thread(target=em_obj.allocateVehicle, daemon= True).start()
                     print('Done')
