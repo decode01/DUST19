@@ -11,7 +11,7 @@ import socket
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--deviceIP')
+parser.add_argument('--hubIP')
 parser.add_argument('--deviceID')
 parser.add_argument('--port')
 
@@ -24,8 +24,9 @@ output = {}
 patient_allocated = False # change this to true for the GPS logic to start working
 patient_gps = {}
 patient_emport = None
+patient_ip = None
 
-if args.deviceIP is None:
+if args.hubIP is None:
     print("Please enter device IP")
     exit(1)
 
@@ -155,7 +156,7 @@ def init_and_start(dummy):
     #sys.stdout.flush()
 
 def connectandregistertochub():
-    chub_socket.connect((str(args.deviceIP), chub_port))
+    chub_socket.connect((str(args.hubIP), chub_port))
     print(chub_socket.recv(1024).decode())
     l_msg = "A:"+ args.deviceID
     chub_socket.send(l_msg.encode())
@@ -194,7 +195,7 @@ def emgCommunicationchannel():
     emg_socket = socket.socket()
     print("Inside emergency protocol")
     if bool(patient_emport):
-        emg_socket.connect((str(args.deviceIP),int(patient_emport)))
+        emg_socket.connect((str(patient_ip),int(patient_emport)))
         print("emergency channel established")
         while True:
             emg_socket.send("Ambulance Movement Initiated".encode())
@@ -208,14 +209,17 @@ def activeListenHub():
         global patient_allocated
         global patient_gps
         global patient_emport
+        global patient_ip
         data = chub_socket.recv(1024)
         local_message = data.decode()
         print('\r{}->  {}\n> '.format("Hub", local_message, end=''))
         if local_message.split(':')[0] == "EM00":
             if local_message.split(":")[2].split(",") :
                 print("Inside estimator")
+                print("Ambulance Local Message",local_message)
                 patient_gps = {"lat": float(local_message.split(":")[2].split(",")[0]), "lon": float(local_message.split(":")[2].split(",")[1])}
-                patient_emport = int(local_message.split(":")[2].split(",")[2])
+                patient_ip = str(local_message.split(":")[2].split(",")[2])
+                patient_emport = int(local_message.split(":")[2].split(",")[3])
                 check_feasibility(local_message.split(':')[1],patient_gps["lat"],patient_gps["lon"])
         elif local_message.split(':')[0] == "EM02":
             patient_allocated = True
