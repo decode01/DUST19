@@ -25,6 +25,7 @@ patient_allocated = False # change this to true for the GPS logic to start worki
 patient_gps = {}
 patient_emport = None
 patient_ip = None
+start_em_msg = True
 
 if args.hubIP is None:
     print("Please enter device IP")
@@ -65,13 +66,15 @@ class Dummy:
 
         if patient_allocated and bool(patient_gps):
             if (patient_gps["lat"] == self.dummy_s1["lat"]) or (abs( patient_gps["lat"] - self.dummy_s1["lat"]) < 0.05 ):
-                print("Reached")
+                pass
+            
             elif patient_gps["lat"] > self.dummy_s1["lat"]:
                 self.dummy_s1["lat"] += 0.05
             else:
                 self.dummy_s1["lat"] -= 0.05
                 
-            if (patient_gps["lon"] == self.dummy_s1["lon"] ) or abs( patient_gps["lon"] - self.dummy_s1["lon"]) < 0.05:
+            if (patient_gps["lon"] == self.dummy_s1["lon"] ) or abs( patient_gps["lon"] - self.dummy_s1["lon"]) < 0.05 and start_em_msg:
+                start_em_msg = False
                 print("Reached")
             elif patient_gps["lon"] > self.dummy_s1["lon"]:
                 self.dummy_s1["lon"] += 0.05
@@ -197,7 +200,7 @@ def emgCommunicationchannel():
     if bool(patient_emport):
         emg_socket.connect((str(patient_ip),int(patient_emport)))
         print("emergency channel established")
-        while True:
+        while start_em_msg:
             emg_socket.send("Ambulance Movement Initiated".encode())
             time.sleep(5)
 

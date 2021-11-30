@@ -198,9 +198,10 @@ class Register:
 
 
 
-
-chub = Register(port)
-
+try:
+    chub = Register(port)
+finally:
+    chub.soc.close()
 
 
 

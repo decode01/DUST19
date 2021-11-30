@@ -198,11 +198,14 @@ def activeListener(soc = None):
 def emergency_channel_activate():
     em_soc = socket.socket()
     print ("Emergency communication channel successfully created")
-    em_soc.bind((str(args.hubIP), em_port))
+    em_soc.bind((str(args.patientIP), em_port))
     print ("Socket binded to %s" %(em_port))
     em_soc.listen(5)
     print ("Socket is listening")
-    threading.Thread(target=activeListener, kwargs={'soc' : em_soc}, daemon=True).start()
+    try:
+        threading.Thread(target=activeListener, kwargs={'soc' : em_soc}, daemon=True).start()
+    finally:
+        em_soc.close()
     while True:
         pass
 
