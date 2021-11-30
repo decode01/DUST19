@@ -63,7 +63,7 @@ class Dummy:
         #play(sound)
         #time.sleep(5)
     def gps(self,patient_allocated,patient_gps):
-
+        global start_em_msg
         if patient_allocated and bool(patient_gps):
             if (patient_gps["lat"] == self.dummy_s1["lat"]) or (abs( patient_gps["lat"] - self.dummy_s1["lat"]) < 0.05 ):
                 pass
@@ -195,6 +195,7 @@ def check_feasibility(p_name,patient_lat, patient_long):
     chub_socket.send(l_msg.encode())
 
 def emgCommunicationchannel():
+    global start_em_msg
     emg_socket = socket.socket()
     print("Inside emergency protocol")
     if bool(patient_emport):

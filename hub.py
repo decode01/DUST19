@@ -137,28 +137,31 @@ class Register:
 
 
     def activeConnector(self):
-        
-        while True:
-            c, addr = self.soc.accept()
-            print ('Got connection from', addr )
-            c.send('Thank you for connecting, Please provide registration info'.encode())
-            data = c.recv(1024)
-            raw_details = format(data.decode())
-            details = raw_details.split(':')
-            tmp_obj = MType(details[0],details[1],c)
-            print("Registration Successfull for {}".format(details[1]))
-            if details[0] == 'H':
-                h_list.append(tmp_obj)
-                threading.Thread(target=self.activeListenPatient,kwargs={'obj':h_list[len(h_list)-1]},daemon=True).start()
-            else:
-                a_list.append(tmp_obj)
-                threading.Thread(target=self.activeListenAmb,kwargs={'obj':a_list[len(a_list)-1]},daemon=True).start()
+        try:
+            while True:
+                c, addr = self.soc.accept()
+                print ('Got connection from', addr )
+                c.send('Thank you for connecting, Please provide registration info'.encode())
+                data = c.recv(1024)
+                raw_details = format(data.decode())
+                details = raw_details.split(':')
+                tmp_obj = MType(details[0],details[1],c)
+                print("Registration Successfull for {}".format(details[1]))
+                if details[0] == 'H':
+                    h_list.append(tmp_obj)
+                    threading.Thread(target=self.activeListenPatient,kwargs={'obj':h_list[len(h_list)-1]},daemon=True).start()
+                else:
+                    a_list.append(tmp_obj)
+                    threading.Thread(target=self.activeListenAmb,kwargs={'obj':a_list[len(a_list)-1]},daemon=True).start()
+        finally:
+            self.soc.close()
         
     
     def activeListenPatient(self,obj = None):
         if obj == None:
             print("Listening Object not defined")
         else:
+            
             while True:
                 data = obj.connector.recv(1024)
                 msg = data.decode()
@@ -171,6 +174,7 @@ class Register:
                     emergency_dict[obj.name] = em_obj
                     threading.Thread(target=em_obj.allocateVehicle, daemon= True).start()
                     print('Done')
+            
 
     
 
@@ -198,10 +202,9 @@ class Register:
 
 
 
-try:
-    chub = Register(port)
-finally:
-    chub.soc.close()
+
+chub = Register(port)
+
 
 
 
