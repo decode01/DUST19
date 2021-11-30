@@ -14,8 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--deviceIP')
 parser.add_argument('--deviceID')
 parser.add_argument('--port')
-parser.add_argument('--emport')
-#parser.add_argument('--mode') "mode not required
+
 args = parser.parse_args()
 chub_port = int(args.port)
 chub_socket = socket.socket()
@@ -24,6 +23,7 @@ chub_socket = socket.socket()
 output = {}
 patient_allocated = False # change this to true for the GPS logic to start working
 patient_gps = {}
+patient_emport = None
 
 if args.deviceIP is None:
     print("Please enter device IP")
@@ -193,11 +193,12 @@ def check_feasibility(p_name,patient_lat, patient_long):
 def emgCommunicationchannel():
     emg_socket = socket.socket()
     print("Inside emergency protocol")
-    emg_socket.connect((str(args.deviceIP),int(args.emport)))
-    print("emergency channel established")
-    while True:
-        emg_socket.send("Ambulance Movement Initiated".encode())
-        time.sleep(5)
+    if bool(patient_emport):
+        emg_socket.connect((str(args.deviceIP),int(patient_emport)))
+        print("emergency channel established")
+        while True:
+            emg_socket.send("Ambulance Movement Initiated".encode())
+            time.sleep(5)
 
 
 
@@ -206,6 +207,7 @@ def activeListenHub():
         dict = peek()
         global patient_allocated
         global patient_gps
+        global patient_emport
         data = chub_socket.recv(1024)
         local_message = data.decode()
         print('\r{}->  {}\n> '.format("Hub", local_message, end=''))
@@ -213,6 +215,7 @@ def activeListenHub():
             if local_message.split(":")[2].split(",") :
                 print("Inside estimator")
                 patient_gps = {"lat": float(local_message.split(":")[2].split(",")[0]), "lon": float(local_message.split(":")[2].split(",")[1])}
+                patient_emport = int(local_message.split(":")[2].split(",")[2])
                 check_feasibility(local_message.split(':')[1],patient_gps["lat"],patient_gps["lon"])
         elif local_message.split(':')[0] == "EM02":
             patient_allocated = True
