@@ -1,4 +1,3 @@
-import numpy as np
 import random
 import time
 import sys
@@ -9,15 +8,18 @@ import socket
 parser = argparse.ArgumentParser()
 parser.add_argument('--deviceID')
 parser.add_argument('--mode')
+parser.add_argument('--port')
+parser.add_argument('--emport')
+parser.add_argument('--deviceIP')
 args = parser.parse_args()
 
 
 output = {}
 emergency = True
-chub_port = 12345
+chub_port =  int(args.port)
 chub_socket = socket.socket()
 chub_emchannel = False
-em_port = 34567
+#em_port =  int(args.emport)
 
 
 if args.deviceID is None:
@@ -25,6 +27,10 @@ if args.deviceID is None:
     exit(1)
 if args.mode is None:
     emergency = False
+    
+if args.emport is None:
+    exit(1)
+em_port =  int(args.emport)
     
 class Dummy:
     def __init__(self,id,emergency):
@@ -150,12 +156,12 @@ def init_and_start(dummy):
     #sys.stdout.flush()
     
 def connectandregistertochub():
-    chub_socket.connect(('127.0.0.1', chub_port)) 
+    chub_socket.connect((str(args.deviceIP), chub_port))
     print (chub_socket.recv(1024).decode())
     l_msg = "H:"+ args.deviceID
     chub_socket.send(l_msg.encode())
 
-connectandregistertochub()   
+connectandregistertochub()
 dummy = instantiate(args.deviceID,emergency)
 listener = threading.Thread(target=init_and_start,kwargs={'dummy':dummy},daemon=True)
 #init_and_start(args.deviceID) #"Pass this to thread and this will output steady steam of values"
@@ -186,9 +192,9 @@ def activeListener(soc = None):
 def emergency_channel_activate():
     em_soc = socket.socket()
     print ("Emergency communication channel successfully created")
-    em_soc.bind(('127.0.0.1', em_port))        
-    print ("Socket binded to %s" %(em_port)) 
-    em_soc.listen(5)    
+    em_soc.bind((str(args.deviceIP), em_port))
+    print ("Socket binded to %s" %(em_port))
+    em_soc.listen(5)
     print ("Socket is listening")
     threading.Thread(target=activeListener, kwargs={'soc' : em_soc}, daemon=True).start()
     while True:
