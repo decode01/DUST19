@@ -176,7 +176,7 @@ def peek(): #gets instance of output
 
 
 def emergencycomm(errcode = '',lat = 0, lon = 0):
-    l_msg = "EM00:"+str(lat)+','+str(lon)
+    l_msg = "EM00:"+str(lat)+','+str(lon)+','+str(args.emport)
     chub_socket.send(l_msg.encode())
     emergency_channel_activate()
 
