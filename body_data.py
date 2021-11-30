@@ -10,7 +10,8 @@ parser.add_argument('--deviceID')
 parser.add_argument('--mode')
 parser.add_argument('--port')
 parser.add_argument('--emport')
-parser.add_argument('--deviceIP')
+parser.add_argument('--hubIP')
+parser.add_argument('--patientIP')
 args = parser.parse_args()
 
 
@@ -29,8 +30,12 @@ if args.mode is None:
     emergency = False
     
 if args.emport is None:
+    print("Please specify patient port")
     exit(1)
 em_port =  int(args.emport)
+if args.patientIP is None:
+    print("Please enter patient IP")
+patientIP = str(args.patientIP)
     
 class Dummy:
     def __init__(self,id,emergency):
@@ -156,7 +161,7 @@ def init_and_start(dummy):
     #sys.stdout.flush()
     
 def connectandregistertochub():
-    chub_socket.connect((str(args.deviceIP), chub_port))
+    chub_socket.connect((str(args.hubIP), chub_port))
     print (chub_socket.recv(1024).decode())
     l_msg = "H:"+ args.deviceID
     chub_socket.send(l_msg.encode())
@@ -176,7 +181,8 @@ def peek(): #gets instance of output
 
 
 def emergencycomm(errcode = '',lat = 0, lon = 0):
-    l_msg = "EM00:"+str(lat)+','+str(lon)+','+str(args.emport)
+    l_msg = "EM00:"+str(lat)+','+str(lon)+','+str(args.patientIP) + ','+str(args.emport)
+    print(l_msg)
     chub_socket.send(l_msg.encode())
     emergency_channel_activate()
 
@@ -192,7 +198,7 @@ def activeListener(soc = None):
 def emergency_channel_activate():
     em_soc = socket.socket()
     print ("Emergency communication channel successfully created")
-    em_soc.bind((str(args.deviceIP), em_port))
+    em_soc.bind((str(args.hubIP), em_port))
     print ("Socket binded to %s" %(em_port))
     em_soc.listen(5)
     print ("Socket is listening")
