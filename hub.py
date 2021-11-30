@@ -1,10 +1,24 @@
-import socket  
+import socket
 import threading
 from datetime import datetime
-
+import argparse
 a_list = []
 h_list = []
 emergency_dict = {}
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--port')
+parser.add_argument('--deviceIP')
+#parser.add_argument('--mode') "mode not required
+args = parser.parse_args()
+
+
+if args.port is None:
+    print("Please specify port")
+    exit(1)
+
+port = int(args.port)
 
 def getAmbulanceDetails(name):
     found = None
@@ -60,7 +74,7 @@ class EmergencyServiceInNeed:
     
     def assignVehicle(self,a_obj):
         self.allocatedv = a_obj
-        l_mg ="EM02:"+self.patient_details.name+":"+self.lon+","+self.lat
+        l_mg ="EM02:"+self.patient_details.name+":"+self.lat+","+self.lon
         a_obj.connector.send(l_mg.encode())
     
     
@@ -79,6 +93,7 @@ class EmergencyServiceInNeed:
                             etamin = self.eta[key]
                             vname = key
                 if vname == '':
+                    print(self.eta.keys())
                     print("No Emergency service can be initiated now, connecting to Hub 2")
                 else:
                     getAmbulanceDetails(vname).inuse = True
@@ -103,15 +118,15 @@ class MType:
 
 
 class Register:
-    def __init__(self,port,addr = '127.0.0.1'):
+    def __init__(self,port,addr = str(args.deviceIP)):
         self.port = port
         self.addr = addr
         self.soc = socket.socket()
         print ("Central Socket successfully created")
-        self.soc.bind(('127.0.0.1', port))        
-        print ("Socket binded to %s" %(port)) 
-        self.soc.listen(5)    
-        print ("Socket is listening") 
+        self.soc.bind((addr, port))
+        print ("Socket binded to %s" %(port))
+        self.soc.listen(5)
+        print ("Socket is listening")
         connthread = threading.Thread(target=self.activeConnector,daemon=True)
         connthread.start()
 
@@ -120,7 +135,7 @@ class Register:
     def activeConnector(self):
         
         while True:
-            c, addr = self.soc.accept()   
+            c, addr = self.soc.accept()
             print ('Got connection from', addr )
             c.send('Thank you for connecting, Please provide registration info'.encode())
             data = c.recv(1024)
@@ -180,7 +195,7 @@ class Register:
 
 
 
-chub = Register(12345)
+chub = Register(port)
 
 
 
@@ -204,5 +219,4 @@ while True:
 
 
     
-
 
