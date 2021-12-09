@@ -204,6 +204,9 @@ def emgCommunicationchannel():
         while start_em_msg:
             emg_socket.send("Ambulance Movement Initiated".encode())
             time.sleep(5)
+        
+        emg_socket.send("Reached".encode())
+        emg_socket.close()
 
 
 

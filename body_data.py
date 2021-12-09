@@ -193,6 +193,9 @@ def activeListener(soc = None):
         data = c.recv(1024)
         msg = data.decode()
         print('Em Responce: {}\n> '.format(msg), end='')
+        if msg == "Reached":
+            c.close()
+            break
 
 
 def emergency_channel_activate():
