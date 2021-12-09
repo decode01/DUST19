@@ -12,7 +12,7 @@ parser.add_argument('--port')
 parser.add_argument('--deviceIP')
 #parser.add_argument('--mode') "mode not required
 args = parser.parse_args()
-
+lock = False
 
 if args.port is None:
     print("Please specify port")
@@ -86,14 +86,17 @@ class EmergencyServiceInNeed:
         allocate = False
         print("Inside Allocate Vehicle")
         while True:
-            vname = ''
-            etamin = 2000
+            vname = None
+            etamin = float("inf")
             if (datetime.now() - self.time).seconds > 2 and allocate == False:
                 
                 print("Inside compare")
                 for key in self.eta.keys():
                     if self.eta[key] != -1:
-                        if self.eta[key] < etamin: #and getAmbulanceDetails(vname).inuse == False:
+                        if not vname:
+                            etamin = self.eta[key]
+                            vname = key
+                        if self.eta[key] < etamin and getAmbulanceDetails(vname).inuse == False:
                             etamin = self.eta[key]
                             vname = key
                 if vname == '':
@@ -181,6 +184,7 @@ class Register:
 
     
     def activeListenAmb(self,obj = None):
+        global lock
         if obj == None:
             print("Listening Object not defined")
         else:
@@ -190,9 +194,13 @@ class Register:
                 print('\r{}: {}\n> '.format(obj.name,msg), end='')
                 msg_split = msg.split(':')
                 if msg_split[0] == 'ETA':
+                    while lock:
+                        print(" Key in use - Waiting for lock release ")
+                    lock = True
                     em_obj = emergency_dict[msg_split[1]]
                     em_obj.eta[obj.name] = float(msg_split[2])
                     em_obj.responses +=1
+                    lock = False
 
 
                     
