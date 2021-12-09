@@ -181,7 +181,15 @@ class Register:
 
     
 
-
+    def assignEmergencyObj(em_obj,msg_split):
+        try:
+            em_obj = emergency_dict[msg_split[1]]
+            em_obj.eta[obj.name] = float(msg_split[2])
+            em_obj.responses +=1
+            return em_obj
+        except KeyError:
+            time.sleep(5)
+            assignEmergencyObj(em_obj,msg_split)
     
     def activeListenAmb(self,obj = None):
         global lock
