@@ -2,6 +2,7 @@ import socket
 import threading
 from datetime import datetime
 import argparse
+import time
 a_list = []
 h_list = []
 emergency_dict = {}
@@ -99,7 +100,7 @@ class EmergencyServiceInNeed:
                         if self.eta[key] < etamin and getAmbulanceDetails(vname).inuse == False:
                             etamin = self.eta[key]
                             vname = key
-                if vname == '':
+                if not vname:
                     print(self.eta.keys())
                     print("No Emergency service can be initiated now, connecting to Hub 2")
                 else:
@@ -181,19 +182,19 @@ class Register:
 
     
 
-    def assignEmergencyObj(em_obj,msg_split):
+    def assignEmergencyObj(self, obj, text_msg_dict,msg_split):
         try:
-            em_obj = emergency_dict[msg_split[1]]
+            em_obj = text_msg_dict[msg_split[1]]
             em_obj.eta[obj.name] = float(msg_split[2])
             em_obj.responses +=1
             return em_obj
         except KeyError:
             time.sleep(5)
-            assignEmergencyObj(em_obj,msg_split)
+            self.assignEmergencyObj(obj, text_msg_dict,msg_split)
     
     def activeListenAmb(self,obj = None):
         global lock
-        global em_obj
+        #global em_obj
         if obj == None:
             print("Listening Object not defined")
         else:
@@ -210,18 +211,9 @@ class Register:
                     #em_obj.eta[obj.name] = float(msg_split[2])
                     #em_obj.responses +=1
                     #lock = False
-                    assignEmergencyObj(em_obj,msg_split)
+                    em_obj = self.assignEmergencyObj(obj, emergency_dict,msg_split)
                     
-    def assignEmergencyObj(em_obj,msg_split):
-        try:
-            em_obj = emergency_dict[msg_split[1]]
-            em_obj.eta[obj.name] = float(msg_split[2])
-            em_obj.responses +=1
-            return em_obj
-        except KeyError:
-            time.sleep(5)
-            assignEmergencyObj(em_obj,msg_split)
-            
+
 
 chub = Register(port)
 
