@@ -18,7 +18,7 @@ args = parser.parse_args()
 output = {}
 emergency = True
 chub_port =  int(args.port)
-chub_socket = socket.socket()
+chub_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 chub_emchannel = False
 #em_port =  int(args.emport)
 
@@ -196,7 +196,7 @@ def activeListener(soc = None):
 
 
 def emergency_channel_activate():
-    em_soc = socket.socket()
+    em_soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print ("Emergency communication channel successfully created")
     em_soc.bind((str(args.patientIP), em_port))
     print ("Socket binded to %s" %(em_port))

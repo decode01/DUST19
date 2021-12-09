@@ -17,7 +17,7 @@ parser.add_argument('--port')
 
 args = parser.parse_args()
 chub_port = int(args.port)
-chub_socket = socket.socket()
+chub_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 output = {}
@@ -196,7 +196,7 @@ def check_feasibility(p_name,patient_lat, patient_long):
 
 def emgCommunicationchannel():
     global start_em_msg
-    emg_socket = socket.socket()
+    emg_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("Inside emergency protocol")
     if bool(patient_emport):
         emg_socket.connect((str(patient_ip),int(patient_emport)))
