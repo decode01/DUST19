@@ -167,6 +167,10 @@ class Register:
                     threading.Thread(target=self.activeListenAmb,kwargs={'obj':a_list[len(a_list)-1]},daemon=True).start()
         finally:
             self.soc.close()
+            for val in a_list:
+                val.connector.close()
+            for val in h_list:
+                val.connector.close()
         
     
     def activeListenPatient(self,obj = None):
