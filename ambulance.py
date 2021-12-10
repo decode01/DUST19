@@ -1,3 +1,9 @@
+# Written by the entire group - 19
+# Almost all the time we worked on this project, we've physically met and peer programmed
+# To peer program, we've used VSCODE LIVE SHARING, where we all coded on the same .py file together
+# That's why it's quite hard to make a separation of who did what because we all coded together
+# and debugged each others' code live.
+
 import numpy as np
 import random
 import time
@@ -40,7 +46,8 @@ if args.port is None:
     exit(1)
     
 port = int(args.port)
-    
+
+# DEEPAYAN
 class Dummy:
     def __init__(self,id,patient_allocated):
         self.id = id
@@ -169,7 +176,7 @@ def peek(): #gets instance of output
     global output
     return(output)
 
-
+# Unnikrishnan
 def calculate_distance(ambulance_lat, ambulance_long, human_lat, human_long) :
     dlon = (ambulance_long - human_long) * 71
     dlat = (ambulance_lat - human_lat) * 111
@@ -178,7 +185,7 @@ def calculate_distance(ambulance_lat, ambulance_long, human_lat, human_long) :
     time = distance/60
     print("ETA:", time)
     return time
-
+# Kemal
 def check_feasibility(p_name,patient_lat, patient_long):
     print("Inside check")
     dict = peek()
@@ -193,7 +200,7 @@ def check_feasibility(p_name,patient_lat, patient_long):
         #No connection return false
     
     chub_socket.send(l_msg.encode())
-
+# Kemal
 def emgCommunicationchannel():
     global start_em_msg
     emg_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -210,7 +217,7 @@ def emgCommunicationchannel():
         emg_socket.close()
 
 
-
+# Tom
 def activeListenHub():
     while True:
         dict = peek()

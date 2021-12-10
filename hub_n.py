@@ -1,3 +1,9 @@
+# Written by the entire group - 19
+# Almost all the time we worked on this project, we've physically met and peer programmed
+# To peer program, we've used VSCODE LIVE SHARING, where we all coded on the same .py file together
+# That's why it's quite hard to make a separation of who did what because we all coded together
+# and debugged each others' code live.
+
 import socket
 import threading
 from datetime import datetime
@@ -21,6 +27,7 @@ if args.port is None:
 
 port = int(args.port)
 
+# KEMAL
 def getAmbulanceDetails(name):
     found = None
     for details in a_list:
@@ -62,7 +69,7 @@ class EmergencyServiceInNeed:
 
 
 
-        
+
     def inBroadcast(self):
         print("IP-hub",self.patient_ip)
         print("IP emport",self.emport)
@@ -77,13 +84,13 @@ class EmergencyServiceInNeed:
             if v.inuse == False:
                 self.available.append(v)
         print("Total available:: {}".format(len(self.available)) )
-    
+
     def assignVehicle(self,a_obj):
         self.allocatedv = a_obj
         l_mg ="EM02:"+self.patient_details.name+":"+self.lat+","+self.lon+","+self.patient_ip+","+self.emport
         a_obj.connector.send(l_mg.encode())
-    
-    
+
+
     def allocateVehicle(self):
         global lock
         allocate = False
@@ -92,7 +99,7 @@ class EmergencyServiceInNeed:
             vname = None
             etamin = float("inf")
             if (datetime.now() - self.time).seconds > 8 and not lock:
-                
+
                 print("Inside compare")
                 for key in self.eta.keys():
                     if self.eta[key] != -1 and getAmbulanceDetails(key).inuse == False:
@@ -112,15 +119,15 @@ class EmergencyServiceInNeed:
                     time.sleep(4)
                     lock = False
                     break
-                
-
-    
-
-        
 
 
 
 
+
+
+
+
+# TOM
 class MType:
     def __init__(self,typ,name,connector,inuse = False):
         self.typ = typ
@@ -172,14 +179,14 @@ class Register:
                 val.connector.close()
             for val in h_list:
                 val.connector.close()
-        
-    
+
+
     def activeListenPatient(self,obj = None):
         global pat_count
         if obj == None:
             print("Listening Object not defined")
         else:
-            
+
             while True:
                 data = obj.connector.recv(1024)
                 msg = data.decode()
@@ -190,15 +197,15 @@ class Register:
                     print('\rEmrgency service initated for {} @ {}\n'.format(obj.name,msg_split[1]), end='')
                     pat_count += 1
                     if pat_count > 1:
-                        time.sleep(5) 
+                        time.sleep(5)
                     em_obj = EmergencyServiceInNeed(obj,sensor_vals[0],sensor_vals[1],sensor_vals[2],sensor_vals[3])
                     emergency_dict[obj.name] = em_obj
                     threading.Thread(target=em_obj.allocateVehicle, daemon= True).start()
                     print('Done')
-            
 
-    
 
+
+    # UNNI
     def assignEmergencyObj(self, obj,msg_split):
         global emergency_dict
         try:
@@ -208,7 +215,7 @@ class Register:
         except KeyError:
             time.sleep(1)
             self.assignEmergencyObj(obj,msg_split)
-    
+
     def activeListenAmb(self,obj = None):
         global lock
         #global em_obj
@@ -222,7 +229,7 @@ class Register:
                 msg_split = msg.split(':')
                 if msg_split[0] == 'ETA':
                     self.assignEmergencyObj(obj,msg_split)
-                    
+
 
 
 chub = Register(port)

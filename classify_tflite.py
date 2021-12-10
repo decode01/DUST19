@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 #Classification file to run on pi (tflite models)
 
+# KEMAL SEDAT CEYHAN's tflite classification file for the project 2
+# used for creating a peer-to-peer security protocol
+
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning)

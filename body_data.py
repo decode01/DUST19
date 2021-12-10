@@ -1,3 +1,9 @@
+# Written by the entire group - 19
+# Almost all the time we worked on this project, we've physically met and peer programmed
+# To peer program, we've used VSCODE LIVE SHARING, where we all coded on the same .py file together
+# That's why it's quite hard to make a separation of who did what because we all coded together
+# and debugged each others' code live.
+
 import random
 import time
 import sys
@@ -37,7 +43,8 @@ em_port =  int(args.emport)
 if args.patientIP is None:
     print("Please enter patient IP")
 patientIP = str(args.patientIP)
-    
+
+# DEEPAYAN
 class Dummy:
     def __init__(self,id,emergency):
         self.id = id
@@ -160,7 +167,8 @@ def init_and_start(dummy):
         time.sleep(.1)
         # print(output, end= "   \r")
     #sys.stdout.flush()
-    
+
+# KEMAL
 def connectandregistertochub():
     chub_socket.connect((str(args.hubIP), chub_port))
     print (chub_socket.recv(1024).decode())
@@ -214,7 +222,7 @@ def emergency_channel_activate():
         pass
 
 
-
+# TOM
 def send_to_hub():
     #communicate to hub
     #LP - Low Pressure

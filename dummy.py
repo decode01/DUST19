@@ -1,3 +1,11 @@
+# Written by the entire group - 19
+# Almost all the time we worked on this project, we've physically met and peer programmed
+# To peer program, we've used VSCODE LIVE SHARING, where we all coded on the same .py file together
+# That's why it's quite hard to make a separation of who did what because we all coded together
+# and debugged each others' code live.
+
+# This file mostly written by DEEPAYAN DATTA
+
 import numpy as np
 import random
 import time

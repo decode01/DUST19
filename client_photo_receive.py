@@ -1,3 +1,6 @@
+# Sample code for receiving an image as a client
+# KEMAL SEDAT CEYHAN
+
 from socket import *
 
 serverIP = ''

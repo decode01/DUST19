@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # Tensorflow classification that uses .h5 and .json
 
+# KEMAL SEDAT CEYHAN's tensorflow classification file for the project 2
+# used for creating a peer-to-peer security protocol
+
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning)

@@ -1,3 +1,6 @@
+# Sample code for sending an image as a server
+# KEMAL SEDAT CEYHAN
+
 from socket import *
 serverIP = ''
 serverPort = 12000
