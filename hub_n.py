@@ -226,13 +226,14 @@ chub = Register(port)
 
 
 while True:
-    msg = input('> ')
-    details = msg.split(':')
-    obj = getObjectByDetails(details[1],details[0])
-    if obj == None:
-        print("Details not found")
-    else:
-        obj.connector.send(details[2].encode())
+    pass
+    # msg = input('> ')
+    # details = msg.split(':')
+    # obj = getObjectByDetails(details[1],details[0])
+    # if obj == None:
+    #     print("Details not found")
+    # else:
+    #     obj.connector.send(details[2].encode())
 
 
     
