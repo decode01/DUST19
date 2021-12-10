@@ -6,7 +6,7 @@ import time
 a_list = []
 h_list = []
 emergency_dict = {}
-
+pat_count = 0
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--port')
@@ -84,12 +84,13 @@ class EmergencyServiceInNeed:
     
     
     def allocateVehicle(self):
+        global lock
         allocate = False
         print("Inside Allocate Vehicle")
         while True:
             vname = None
             etamin = float("inf")
-            if (datetime.now() - self.time).seconds > 8 and allocate == False:
+            if (datetime.now() - self.time).seconds > 8 and not lock:
                 
                 print("Inside compare")
                 for key in self.eta.keys():
@@ -104,8 +105,11 @@ class EmergencyServiceInNeed:
                     print(self.eta.keys())
                     print("No Emergency service can be initiated now, connecting to Hub 2")
                 else:
+                    lock = True
                     getAmbulanceDetails(vname).inuse = True
                     self.assignVehicle(getAmbulanceDetails(vname))
+                    time.sleep(4)
+                    lock = False
                     break
                 
 
@@ -141,6 +145,7 @@ class Register:
 
 
     def activeConnector(self):
+        global pat_count
         try:
             while True:
                 c, addr = self.soc.accept()
@@ -152,6 +157,9 @@ class Register:
                 tmp_obj = MType(details[0],details[1],c)
                 print("Registration Successfull for {}".format(details[1]))
                 if details[0] == 'H':
+                    pat_count += 1
+                    if pat_count > 1:
+                        time.sleep(4)
                     h_list.append(tmp_obj)
                     threading.Thread(target=self.activeListenPatient,kwargs={'obj':h_list[len(h_list)-1]},daemon=True).start()
                 else:
