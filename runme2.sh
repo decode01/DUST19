@@ -1,4 +1,4 @@
-#SCENARIO 1: one hub, two faulty ambulances and one patient having a heart attack
+#SCENARIO 2: one hub, two faulty ambulances and one patient having heart attacks
 #Command to run the Hub
 python3 hub_n.py --port 33000 --deviceIP 10.35.70.37 &
 sleep  3
