@@ -199,10 +199,11 @@ def emgCommunicationchannel():
     emg_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("Inside emergency protocol")
     if bool(patient_emport):
+        print("Patient Emport:",patient_emport)
         emg_socket.connect((str(patient_ip),int(patient_emport)))
         print("emergency channel established")
         while start_em_msg:
-            emg_socket.send("Ambulance Movement Initiated".encode())
+            emg_socket.send(("Ambulance Movement Initiated --> ambulance Id: " + str(args.deviceID)).encode())
             time.sleep(5)
         
         emg_socket.send("Reached".encode())
@@ -232,6 +233,8 @@ def activeListenHub():
             patient_allocated = True
             print("Inside EM02")
             patient_gps = {"lat": float(local_message.split(":")[2].split(",")[0]), "lon": float(local_message.split(":")[2].split(",")[1])}
+            patient_ip = str(local_message.split(":")[2].split(",")[2])
+            patient_emport = int(local_message.split(":")[2].split(",")[3])
             threading.Thread(target=emgCommunicationchannel, daemon= True).start()
 
 

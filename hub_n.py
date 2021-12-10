@@ -72,6 +72,7 @@ class EmergencyServiceInNeed:
             v.connector.send(l_msg.encode())
 
     def getAvailableVehicle(self):
+        self.available = []
         for v in a_list:
             if v.inuse == False:
                 self.available.append(v)
@@ -79,7 +80,7 @@ class EmergencyServiceInNeed:
     
     def assignVehicle(self,a_obj):
         self.allocatedv = a_obj
-        l_mg ="EM02:"+self.patient_details.name+":"+self.lat+","+self.lon
+        l_mg ="EM02:"+self.patient_details.name+":"+self.lat+","+self.lon+","+self.patient_ip+","+self.emport
         a_obj.connector.send(l_mg.encode())
     
     
@@ -94,11 +95,11 @@ class EmergencyServiceInNeed:
                 
                 print("Inside compare")
                 for key in self.eta.keys():
-                    if self.eta[key] != -1:
+                    if self.eta[key] != -1 and getAmbulanceDetails(key).inuse == False:
                         if not vname:
                             etamin = self.eta[key]
                             vname = key
-                        if self.eta[key] < etamin and getAmbulanceDetails(vname).inuse == False:
+                        if self.eta[key] < etamin:
                             etamin = self.eta[key]
                             vname = key
                 if not vname:
@@ -157,9 +158,9 @@ class Register:
                 tmp_obj = MType(details[0],details[1],c)
                 print("Registration Successfull for {}".format(details[1]))
                 if details[0] == 'H':
-                    pat_count += 1
-                    if pat_count > 1:
-                        time.sleep(4)
+                    #pat_count += 1
+                    #if pat_count > 1:
+                    #    time.sleep(4)
                     h_list.append(tmp_obj)
                     threading.Thread(target=self.activeListenPatient,kwargs={'obj':h_list[len(h_list)-1]},daemon=True).start()
                 else:
@@ -174,6 +175,7 @@ class Register:
         
     
     def activeListenPatient(self,obj = None):
+        global pat_count
         if obj == None:
             print("Listening Object not defined")
         else:
@@ -186,6 +188,9 @@ class Register:
                 if msg_split[0] == 'EM00':
                     sensor_vals = msg_split[1].split(',')
                     print('\rEmrgency service initated for {} @ {}\n'.format(obj.name,msg_split[1]), end='')
+                    pat_count += 1
+                    if pat_count > 1:
+                        time.sleep(5) 
                     em_obj = EmergencyServiceInNeed(obj,sensor_vals[0],sensor_vals[1],sensor_vals[2],sensor_vals[3])
                     emergency_dict[obj.name] = em_obj
                     threading.Thread(target=em_obj.allocateVehicle, daemon= True).start()
@@ -229,20 +234,21 @@ chub = Register(port)
 
 
 
-while True:
-    pass
-    # msg = input('> ')
-    # details = msg.split(':')
-    # obj = getObjectByDetails(details[1],details[0])
-    # if obj == None:
-    #     print("Details not found")
-    # else:
-    #     obj.connector.send(details[2].encode())
+try:
+    while True:
+        pass
+        # msg = input('> ')
+        # details = msg.split(':')
+        # obj = getObjectByDetails(details[1],details[0])
+        # if obj == None:
+        #     print("Details not found")
+        # else:
+        #     obj.connector.send(details[2].encode())
 
-
-    
-
-
-
-    
+except KeyboardInterrupt:
+    chub.soc.close()
+    for val in a_list:
+        val.connector.close()
+    for val in h_list:
+        val.connector.close()
 
