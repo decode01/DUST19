@@ -1,4 +1,4 @@
-# DUST19
+# Emergency Response System (Aggregation of Body Area Network and Vehicular Ambulance Network)
 In this project, we aimed to combine two main concepts discussed throughout the SC module: 
     i) vehicular setting 
     ii) body area network
