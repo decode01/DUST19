@@ -16,19 +16,13 @@ the Data Layer from the Control Layer as much as we could. The Data Layer mostly
 the control layer includes the logic that determines whether the sensor readings of a body-area network is not within a 
 given range (body-area network) and one that.
 
-Command to run the Hub
-python3 hub_n.py --port <Hub Port> --deviceIP <Hub IP>
-eg:- python3 hub_n.py --port 34000 --deviceIP 10.35.70.37
+* There are four runme files corresponding to four different use-cases that need to be executed. These runme files together with their respective scenarios and their execution commands can be found in the below table.
+* Since each runme file uses the same ports, we have included a "killall" linux command at the end of each shell script to run after 120 seconds ( estimated time of execution ).These scripts would self terminate after 120 seconds each.
+* However, as a precautionary measure, we would suggest that you should wait for about 2-3 minutes in between each runme execution( e.g.,bash runme1.sh <---2/3 minutes-----> bash runme2.sh ,etc) corresponding to the different scenarios.
+* Now, all the runme scripts need to be executed in pi37 separately, but the underlying python codes have the flexibility to be executed in any of the pi-s. You could verify from the screenshots included in the report, that the hub_n, ambulance and the body_data scripts were run in both pi-s 37 and 38.
 
-Command to run the Ambulance
-python3 ambulance.py --deviceID <Ambulance unique ID> --port <Hub Port> --hubIP <Hub IP>
-eg:- python3 ambulance.py --deviceID 125 --port 34000 --hubIP 10.35.70.37
-If the Ambulance ID is even then it willbe considered as a faulty ambulance
 
-Command to run the Body Area Network
-python3 body_data.py --deviceID <Patient Name> --port <Hub Port> --mode <Mode> --emport <Patient Emergency Channel Port> --hubIP <Hub IP> --patientIP <Patient Emergency Channel IP>
-eg:- python3 body_data.py --deviceID Evelyn --port 34000 --mode emergency --emport 33090 --hubIP 10.35.70.37 --patientIP 10.35.70.37
---mode is a optional paramater. If any value is passed it means that the patient would get an attack in a sepcific time.
+**STEPS TO BE FOLLOWED FOR REPLICATING THE USE CASES (each runme corresponds to a different scenario):**
     
 | Scenarios | Scripts  | Execution | Pi
 | :------------ |:---------------:| -----:|------:|
@@ -36,3 +30,5 @@ eg:- python3 body_data.py --deviceID Evelyn --port 34000 --mode emergency --empo
 | one hub, two ambulances ( both faulty), one patient (having heart attack)     | runme2.sh       | bash runme2.sh | 10.35.70.37 |
 | one hub, two ambulances ( both working), one patient (having heart attack) | runme3.sh       | bash runme3.sh | 10.35.70.37 |
 | one hub, three ambulances ( one faulty, two working), three patients( two having heart attacks,one healthy ) | runme4.sh       | bash runme4.sh | 10.35.70.37 |
+
+
