@@ -154,7 +154,7 @@ class Dummy:
         output["D8"] = self.bloodpressure(emergency)
         
         return output
-
+# KEMAL
 def instantiate(id,emergency):
     dummy = Dummy(id,emergency)
     return dummy
@@ -206,7 +206,7 @@ def activeListener(soc = None):
             c.close()
             break
 
-
+# UNNI
 def emergency_channel_activate():
     em_soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print ("Emergency communication channel successfully created")

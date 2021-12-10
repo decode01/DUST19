@@ -4,7 +4,7 @@
 # That's why it's quite hard to make a separation of who did what because we all coded together
 # and debugged each others' code live.
 
-# This file mostly written by DEEPAYAN DATTA
+# DEEPAYAN DATTA
 
 import numpy as np
 import random
