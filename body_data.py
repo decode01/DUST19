@@ -168,7 +168,7 @@ def init_and_start(dummy):
         # print(output, end= "   \r")
     #sys.stdout.flush()
 
-# KEMAL
+# DEEPAYAN / KEMAL
 def connectandregistertochub():
     chub_socket.connect((str(args.hubIP), chub_port))
     print (chub_socket.recv(1024).decode())
