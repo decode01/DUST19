@@ -29,3 +29,10 @@ Command to run the Body Area Network
 python3 body_data.py --deviceID <Patient Name> --port <Hub Port> --mode <Mode> --emport <Patient Emergency Channel Port> --hubIP <Hub IP> --patientIP <Patient Emergency Channel IP>
 eg:- python3 body_data.py --deviceID Evelyn --port 34000 --mode emergency --emport 33090 --hubIP 10.35.70.37 --patientIP 10.35.70.37
 --mode is a optional paramater. If any value is passed it means that the patient would get an attack in a sepcific time.
+    
+| Scenarios | Scripts  | Execution |
+| :------------ |:---------------:| -----:|
+| one hub, two ambulances( one faulty, one working) and one patient having a heart attack     | runme1.sh       | bash runme1.sh |
+| one hub, two ambulances ( both faulty), one patient (having heart attack)     | runme2.sh       | bash runme2.sh |
+| one hub, two ambulances ( both working), one patient (having heart attack) | runme3.sh       | bash runme3.sh |
+| one hub, three ambulances ( one faulty, two working), three patients( two having heart attacks,one healthy ) | runme4.sh       | bash runme4.sh |
