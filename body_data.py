@@ -1,4 +1,9 @@
-import numpy as np
+# Written by the entire group - 19
+# Almost all the time we worked on this project, we've physically met and peer programmed
+# To peer program, we've used VSCODE LIVE SHARING, where we all coded on the same .py file together
+# That's why it's quite hard to make a separation of who did what because we all coded together
+# and debugged each others' code live.
+
 import random
 import time
 import sys
@@ -6,18 +11,23 @@ import threading
 import argparse
 import socket
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--deviceID')
 parser.add_argument('--mode')
+parser.add_argument('--port')
+parser.add_argument('--emport')
+parser.add_argument('--hubIP')
+parser.add_argument('--patientIP')
 args = parser.parse_args()
 
 
 output = {}
 emergency = True
-chub_port = 12345
-chub_socket = socket.socket()
+chub_port =  int(args.port)
+chub_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 chub_emchannel = False
-em_port = 34567
+#em_port =  int(args.emport)
 
 
 if args.deviceID is None:
@@ -26,6 +36,15 @@ if args.deviceID is None:
 if args.mode is None:
     emergency = False
     
+if args.emport is None:
+    print("Please specify patient port")
+    exit(1)
+em_port =  int(args.emport)
+if args.patientIP is None:
+    print("Please enter patient IP")
+patientIP = str(args.patientIP)
+
+# DEEPAYAN
 class Dummy:
     def __init__(self,id,emergency):
         self.id = id
@@ -135,7 +154,7 @@ class Dummy:
         output["D8"] = self.bloodpressure(emergency)
         
         return output
-
+# KEMAL
 def instantiate(id,emergency):
     dummy = Dummy(id,emergency)
     return dummy
@@ -148,14 +167,15 @@ def init_and_start(dummy):
         time.sleep(.1)
         # print(output, end= "   \r")
     #sys.stdout.flush()
-    
+
+# DEEPAYAN / KEMAL
 def connectandregistertochub():
-    chub_socket.connect(('127.0.0.1', chub_port)) 
+    chub_socket.connect((str(args.hubIP), chub_port))
     print (chub_socket.recv(1024).decode())
     l_msg = "H:"+ args.deviceID
     chub_socket.send(l_msg.encode())
 
-connectandregistertochub()   
+connectandregistertochub()
 dummy = instantiate(args.deviceID,emergency)
 listener = threading.Thread(target=init_and_start,kwargs={'dummy':dummy},daemon=True)
 #init_and_start(args.deviceID) #"Pass this to thread and this will output steady steam of values"
@@ -170,7 +190,8 @@ def peek(): #gets instance of output
 
 
 def emergencycomm(errcode = '',lat = 0, lon = 0):
-    l_msg = "EM00:"+str(lat)+','+str(lon)
+    l_msg = "EM00:"+str(lat)+','+str(lon)+','+str(args.patientIP) + ','+str(args.emport)
+    print(l_msg)
     chub_socket.send(l_msg.encode())
     emergency_channel_activate()
 
@@ -181,21 +202,27 @@ def activeListener(soc = None):
         data = c.recv(1024)
         msg = data.decode()
         print('Em Responce: {}\n> '.format(msg), end='')
+        if msg == "Reached":
+            c.close()
+            break
 
-
+# UNNI
 def emergency_channel_activate():
-    em_soc = socket.socket()
+    em_soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print ("Emergency communication channel successfully created")
-    em_soc.bind(('127.0.0.1', em_port))        
-    print ("Socket binded to %s" %(em_port)) 
-    em_soc.listen(5)    
+    em_soc.bind((str(args.patientIP), em_port))
+    print ("Socket binded to %s" %(em_port))
+    em_soc.listen(5)
     print ("Socket is listening")
-    threading.Thread(target=activeListener, kwargs={'soc' : em_soc}, daemon=True).start()
+    try:
+        threading.Thread(target=activeListener, kwargs={'soc' : em_soc}, daemon=True).start()
+    finally:
+        em_soc.close()
     while True:
         pass
 
 
-
+# TOM
 def send_to_hub():
     #communicate to hub
     #LP - Low Pressure

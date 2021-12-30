@@ -1,3 +1,9 @@
+# Written by the entire group - 19
+# Almost all the time we worked on this project, we've physically met and peer programmed
+# To peer program, we've used VSCODE LIVE SHARING, where we all coded on the same .py file together
+# That's why it's quite hard to make a separation of who did what because we all coded together
+# and debugged each others' code live.
+
 import numpy as np
 import random
 import time
@@ -11,22 +17,37 @@ import socket
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--hubIP')
 parser.add_argument('--deviceID')
-#parser.add_argument('--mode') "mode not required
+parser.add_argument('--port')
+
 args = parser.parse_args()
-chub_port = 12345
-chub_socket = socket.socket()
+chub_port = int(args.port)
+chub_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 output = {}
 patient_allocated = False # change this to true for the GPS logic to start working
 patient_gps = {}
+patient_emport = None
+patient_ip = None
+start_em_msg = True
 
+if args.hubIP is None:
+    print("Please enter device IP")
+    exit(1)
 
 if args.deviceID is None:
     print("Please enter device ID")
     exit(1)
     
+if args.port is None:
+    print("Please specify port")
+    exit(1)
+    
+port = int(args.port)
+
+# DEEPAYAN
 class Dummy:
     def __init__(self,id,patient_allocated):
         self.id = id
@@ -44,26 +65,28 @@ class Dummy:
         
         #self.fuel_start = fuel_start
     def playsound(self):
-        sound = AudioSegment.from_wav('ami_copsirene.wav')
-    
-        play(sound)
-        time.sleep(5)
+        #sound = AudioSegment.from_wav('ami_copsirene.wav')
+        pass
+        #play(sound)
+        #time.sleep(5)
     def gps(self,patient_allocated,patient_gps):
-
+        global start_em_msg
         if patient_allocated and bool(patient_gps):
-            if (patient_gps["lat"] == self.dummy_s1["lat"]) or (abs( patient_gps["lat"] - self.dummy_s1["lat"]) < 0.005 ):
+            if (patient_gps["lat"] == self.dummy_s1["lat"]) or (abs( patient_gps["lat"] - self.dummy_s1["lat"]) < 0.05 ):
                 pass
+            
             elif patient_gps["lat"] > self.dummy_s1["lat"]:
-                self.dummy_s1["lat"] += 0.005
+                self.dummy_s1["lat"] += 0.05
             else:
-                self.dummy_s1["lat"] -= 0.005
+                self.dummy_s1["lat"] -= 0.05
                 
-            if (patient_gps["lon"] == self.dummy_s1["lon"] ) or abs( patient_gps["lon"] - self.dummy_s1["lon"]) < 0.005:
-                pass
+            if (patient_gps["lon"] == self.dummy_s1["lon"] ) or abs( patient_gps["lon"] - self.dummy_s1["lon"]) < 0.05 and start_em_msg:
+                start_em_msg = False
+                print("Reached")
             elif patient_gps["lon"] > self.dummy_s1["lon"]:
-                self.dummy_s1["lon"] += 0.005
+                self.dummy_s1["lon"] += 0.05
             else:
-                self.dummy_s1["lon"] -= 0.005
+                self.dummy_s1["lon"] -= 0.05
         
         else:
             self.dummy_s1["lat"] += 0.0001
@@ -129,6 +152,7 @@ class Dummy:
         
         return output
 
+# Unnikrishnan
 def instantiate(id,patient_allocated):
     dummy = Dummy(id,patient_allocated)
     return dummy
@@ -143,7 +167,7 @@ def init_and_start(dummy):
     #sys.stdout.flush()
 
 def connectandregistertochub():
-    chub_socket.connect(('127.0.0.1', chub_port)) 
+    chub_socket.connect((str(args.hubIP), chub_port))
     print(chub_socket.recv(1024).decode())
     l_msg = "A:"+ args.deviceID
     chub_socket.send(l_msg.encode())
@@ -153,7 +177,7 @@ def peek(): #gets instance of output
     global output
     return(output)
 
-
+# Unnikrishnan
 def calculate_distance(ambulance_lat, ambulance_long, human_lat, human_long) :
     dlon = (ambulance_long - human_long) * 71
     dlat = (ambulance_lat - human_lat) * 111
@@ -162,7 +186,7 @@ def calculate_distance(ambulance_lat, ambulance_long, human_lat, human_long) :
     time = distance/60
     print("ETA:", time)
     return time
-
+# Kemal
 def check_feasibility(p_name,patient_lat, patient_long):
     print("Inside check")
     dict = peek()
@@ -177,38 +201,52 @@ def check_feasibility(p_name,patient_lat, patient_long):
         #No connection return false
     
     chub_socket.send(l_msg.encode())
-
+# Kemal
 def emgCommunicationchannel():
-    emg_socket = socket.socket()
+    global start_em_msg
+    emg_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("Inside emergency protocol")
-    emg_socket.connect(('127.0.0.1',34567))
-    print("emergency channel established")
-    while True:
-        emg_socket.send("ETA dummy data".encode())
-        time.sleep(5)
+    if bool(patient_emport):
+        print("Patient Emport:",patient_emport)
+        emg_socket.connect((str(patient_ip),int(patient_emport)))
+        print("emergency channel established")
+        while start_em_msg:
+            emg_socket.send(("Ambulance Movement Initiated --> ambulance Id: " + str(args.deviceID)).encode())
+            time.sleep(5)
+        
+        emg_socket.send("Reached".encode())
+        emg_socket.close()
 
 
-
+# Tom
 def activeListenHub():
     while True:
         dict = peek()
         global patient_allocated
         global patient_gps
+        global patient_emport
+        global patient_ip
         data = chub_socket.recv(1024)
         local_message = data.decode()
         print('\r{}->  {}\n> '.format("Hub", local_message, end=''))
         if local_message.split(':')[0] == "EM00":
             if local_message.split(":")[2].split(",") :
                 print("Inside estimator")
+                print("Ambulance Local Message",local_message)
                 patient_gps = {"lat": float(local_message.split(":")[2].split(",")[0]), "lon": float(local_message.split(":")[2].split(",")[1])}
+                patient_ip = str(local_message.split(":")[2].split(",")[2])
+                patient_emport = int(local_message.split(":")[2].split(",")[3])
                 check_feasibility(local_message.split(':')[1],patient_gps["lat"],patient_gps["lon"])
         elif local_message.split(':')[0] == "EM02":
+            patient_allocated = True
             print("Inside EM02")
             patient_gps = {"lat": float(local_message.split(":")[2].split(",")[0]), "lon": float(local_message.split(":")[2].split(",")[1])}
+            patient_ip = str(local_message.split(":")[2].split(",")[2])
+            patient_emport = int(local_message.split(":")[2].split(",")[3])
             threading.Thread(target=emgCommunicationchannel, daemon= True).start()
 
 
-connectandregistertochub()    
+connectandregistertochub()
 dummy = instantiate(args.deviceID,patient_allocated)
 listener = threading.Thread(target=init_and_start,kwargs={'dummy':dummy},daemon=True)
 #init_and_start(args.deviceID) #"Pass this to thread and this will output steady steam of values"
@@ -218,14 +256,14 @@ listener.start()
 #CONTROL LOGIC STARTS from here
 
 #lets test
-time.sleep(20) 
+time.sleep(20)
 #siren will start after 20 seconds, ( for test purposes)
 #daemon <true/false>?
-patient_allocated = True
-patient_gps = { "lat":53 , "lon" : -6}
+#patient_allocated = True
+#patient_gps = { "lat":53 , "lon" : -6}
 #Now ambulance will start moving towards the target
+#time.sleep(50)
 time.sleep(50)
-
 
 
 while True:
